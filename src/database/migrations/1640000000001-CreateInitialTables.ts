@@ -48,6 +48,12 @@ export class CreateInitialTables1640000000001 implements MigrationInterface {
             default: "'active'",
           },
           {
+            name: 'isDeleted',
+            type: 'boolean',
+            default: false,
+            isNullable: false,
+          },
+          {
             name: 'last_login',
             type: 'timestamp',
             isNullable: true,
@@ -67,6 +73,7 @@ export class CreateInitialTables1640000000001 implements MigrationInterface {
           { name: 'IDX_USER_EMAIL', columnNames: ['email'] },
           { name: 'IDX_USER_ROLE', columnNames: ['role'] },
           { name: 'IDX_USER_STATUS', columnNames: ['status'] },
+          { name: 'IDX_USER_IS_DELETED', columnNames: ['isDeleted'] },
         ],
       }),
       true,

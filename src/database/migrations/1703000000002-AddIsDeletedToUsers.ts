@@ -4,6 +4,7 @@ export class AddIsDeletedToUsers1703000000002 implements MigrationInterface {
   name = 'AddIsDeletedToUsers1703000000002';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // This migration is now a no-op since isDeleted column is included in the initial migration
     // Check if the column already exists
     const table = await queryRunner.getTable('users');
     const hasIsDeletedColumn = table?.columns.find(
@@ -11,9 +12,10 @@ export class AddIsDeletedToUsers1703000000002 implements MigrationInterface {
     );
 
     if (!hasIsDeletedColumn) {
+      // Add column with boolean type to match entity definition
       await queryRunner.query(`
         ALTER TABLE \`users\`
-        ADD COLUMN \`isDeleted\` tinyint NOT NULL DEFAULT 0
+        ADD COLUMN \`isDeleted\` boolean NOT NULL DEFAULT false
       `);
     }
 

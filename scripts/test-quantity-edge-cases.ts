@@ -71,8 +71,8 @@ class QuantityEdgeCaseTests {
 
     // Create test user
     await this.dataSource.query(`
-      INSERT IGNORE INTO users (id, email, name, password, role, status, created_at, updated_at)
-      VALUES ('test-user-edge', 'edge-test@example.com', 'Edge Test User', 'hashed', 'admin', 'active', NOW(), NOW())
+      INSERT IGNORE INTO users (id, email, name, password, role, status, isDeleted, created_at, updated_at)
+      VALUES ('test-user-edge', 'edge-test@example.com', 'Edge Test User', 'hashed', 'admin', 'active', false, NOW(), NOW())
     `);
 
     // Create test order

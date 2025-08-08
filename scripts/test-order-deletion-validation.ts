@@ -67,8 +67,8 @@ class OrderDeletionValidationTests {
 
     // Create test user
     await this.dataSource.query(`
-      INSERT IGNORE INTO users (id, email, name, password, role, status, created_at, updated_at)
-      VALUES ('test-user-order-del', 'order-del-test@example.com', 'Order Deletion Test User', 'hashed', 'admin', 'active', NOW(), NOW())
+      INSERT IGNORE INTO users (id, email, name, password, role, status, isDeleted, created_at, updated_at)
+      VALUES ('test-user-order-del', 'order-del-test@example.com', 'Order Deletion Test User', 'hashed', 'admin', 'active', false, NOW(), NOW())
     `);
 
     // Create test order without deliveries
@@ -132,19 +132,19 @@ class OrderDeletionValidationTests {
       `);
 
       if (!orderCheck) {
-        this.results.push({ 
-          testName: 'Order Deletion Without Deliveries - Setup Check', 
-          passed: false, 
-          error: 'Test order not found' 
+        this.results.push({
+          testName: 'Order Deletion Without Deliveries - Setup Check',
+          passed: false,
+          error: 'Test order not found'
         });
         return;
       }
 
       if (orderCheck.delivery_count > 0) {
-        this.results.push({ 
-          testName: 'Order Deletion Without Deliveries - Setup Check', 
-          passed: false, 
-          error: 'Test order should not have deliveries' 
+        this.results.push({
+          testName: 'Order Deletion Without Deliveries - Setup Check',
+          passed: false,
+          error: 'Test order should not have deliveries'
         });
         return;
       }
@@ -170,25 +170,25 @@ class OrderDeletionValidationTests {
         if (deletedOrder && deletedOrder.is_deleted === 1) {
           this.results.push({ testName: 'Order Deletion Without Deliveries - Deletion Success', passed: true });
         } else {
-          this.results.push({ 
-            testName: 'Order Deletion Without Deliveries - Deletion Success', 
-            passed: false, 
-            error: 'Order was not soft deleted' 
+          this.results.push({
+            testName: 'Order Deletion Without Deliveries - Deletion Success',
+            passed: false,
+            error: 'Order was not soft deleted'
           });
         }
       } else {
-        this.results.push({ 
-          testName: 'Order Deletion Without Deliveries - Deletion Success', 
-          passed: false, 
-          error: 'Unexpected deliveries found' 
+        this.results.push({
+          testName: 'Order Deletion Without Deliveries - Deletion Success',
+          passed: false,
+          error: 'Unexpected deliveries found'
         });
       }
 
     } catch (error) {
-      this.results.push({ 
-        testName: 'Order Deletion Without Deliveries', 
-        passed: false, 
-        error: error.message 
+      this.results.push({
+        testName: 'Order Deletion Without Deliveries',
+        passed: false,
+        error: error.message
       });
     }
   }
@@ -207,19 +207,19 @@ class OrderDeletionValidationTests {
       `);
 
       if (!orderCheck) {
-        this.results.push({ 
-          testName: 'Order Deletion With Deliveries - Setup Check', 
-          passed: false, 
-          error: 'Test order not found' 
+        this.results.push({
+          testName: 'Order Deletion With Deliveries - Setup Check',
+          passed: false,
+          error: 'Test order not found'
         });
         return;
       }
 
       if (orderCheck.delivery_count === 0) {
-        this.results.push({ 
-          testName: 'Order Deletion With Deliveries - Setup Check', 
-          passed: false, 
-          error: 'Test order should have deliveries' 
+        this.results.push({
+          testName: 'Order Deletion With Deliveries - Setup Check',
+          passed: false,
+          error: 'Test order should have deliveries'
         });
         return;
       }
@@ -233,8 +233,8 @@ class OrderDeletionValidationTests {
 
       if (deliveryCount[0].count > 0) {
         // This should trigger the validation error
-        this.results.push({ 
-          testName: 'Order Deletion With Deliveries - Validation Triggered', 
+        this.results.push({
+          testName: 'Order Deletion With Deliveries - Validation Triggered',
           passed: true,
           details: `Found ${deliveryCount[0].count} deliveries - deletion should be prevented`
         });
@@ -247,25 +247,25 @@ class OrderDeletionValidationTests {
         if (orderStatus && orderStatus.is_deleted === 0) {
           this.results.push({ testName: 'Order Deletion With Deliveries - Order Preserved', passed: true });
         } else {
-          this.results.push({ 
-            testName: 'Order Deletion With Deliveries - Order Preserved', 
-            passed: false, 
-            error: 'Order should not have been deleted' 
+          this.results.push({
+            testName: 'Order Deletion With Deliveries - Order Preserved',
+            passed: false,
+            error: 'Order should not have been deleted'
           });
         }
       } else {
-        this.results.push({ 
-          testName: 'Order Deletion With Deliveries - Validation Triggered', 
-          passed: false, 
-          error: 'Expected deliveries not found' 
+        this.results.push({
+          testName: 'Order Deletion With Deliveries - Validation Triggered',
+          passed: false,
+          error: 'Expected deliveries not found'
         });
       }
 
     } catch (error) {
-      this.results.push({ 
-        testName: 'Order Deletion With Deliveries', 
-        passed: false, 
-        error: error.message 
+      this.results.push({
+        testName: 'Order Deletion With Deliveries',
+        passed: false,
+        error: error.message
       });
     }
   }
@@ -284,8 +284,8 @@ class OrderDeletionValidationTests {
         }
       }
 
-      this.results.push({ 
-        testName: 'Database Constraints - Foreign Key Protection', 
+      this.results.push({
+        testName: 'Database Constraints - Foreign Key Protection',
         passed: constraintWorked,
         error: constraintWorked ? undefined : 'Foreign key constraint should have prevented deletion'
       });
@@ -303,33 +303,33 @@ class OrderDeletionValidationTests {
       `);
 
       const orderConstraint = constraints.find(c => c.DELETE_RULE === 'RESTRICT');
-      
+
       if (orderConstraint) {
-        this.results.push({ 
-          testName: 'Database Constraints - RESTRICT Rule Verified', 
+        this.results.push({
+          testName: 'Database Constraints - RESTRICT Rule Verified',
           passed: true,
           details: `Constraint: ${orderConstraint.CONSTRAINT_NAME}, Delete Rule: ${orderConstraint.DELETE_RULE}`
         });
       } else {
-        this.results.push({ 
-          testName: 'Database Constraints - RESTRICT Rule Verified', 
-          passed: false, 
-          error: 'RESTRICT constraint not found or not properly configured' 
+        this.results.push({
+          testName: 'Database Constraints - RESTRICT Rule Verified',
+          passed: false,
+          error: 'RESTRICT constraint not found or not properly configured'
         });
       }
 
     } catch (error) {
-      this.results.push({ 
-        testName: 'Database Constraints', 
-        passed: false, 
-        error: error.message 
+      this.results.push({
+        testName: 'Database Constraints',
+        passed: false,
+        error: error.message
       });
     }
   }
 
   private reportResults() {
     console.log('\n📊 Test Results Summary:');
-    console.log('=' .repeat(60));
+    console.log('='.repeat(60));
 
     const passed = this.results.filter(r => r.passed).length;
     const failed = this.results.filter(r => !r.passed).length;
@@ -345,7 +345,7 @@ class OrderDeletionValidationTests {
       }
     });
 
-    console.log('=' .repeat(60));
+    console.log('='.repeat(60));
     console.log(`Total Tests: ${this.results.length}`);
     console.log(`Passed: ${passed}`);
     console.log(`Failed: ${failed}`);

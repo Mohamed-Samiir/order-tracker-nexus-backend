@@ -37,6 +37,7 @@
     "test:quantity-triggers": "jest --config ./test/jest-e2e.json --testNamePattern='Quantity Calculation Triggers'",
     "test:order-deletion": "jest --config ./test/jest-e2e.json --testNamePattern='Order Deletion Validation'",
     "test:orders-unit": "jest src/orders/orders.service.spec.ts",
+    "test:migration-fix": "ts-node scripts/test-migration-fix.ts",
     "seed:prod": "NODE_ENV=production ts-node src/database/seeds/seed.ts",
     "migration:prod": "NODE_ENV=production npm run migration:run",
     "test:e2e:prod": "NODE_ENV=test jest --config ./test/jest-e2e.json",
