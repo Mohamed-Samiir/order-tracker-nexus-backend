@@ -29,13 +29,16 @@ export class AddDeliveryIdToDeliveries1703000000012 implements MigrationInterfac
 
       // Populate existing records with generated delivery IDs based on creation order
       console.log('🔄 Populating existing delivery records with delivery IDs...');
-      
+
+      // Initialize the row number variable
+      await queryRunner.query(`SET @row_number = 0`);
+
+      // Update deliveries with generated IDs
       await queryRunner.query(`
-        SET @row_number = 0;
-        UPDATE deliveries 
+        UPDATE deliveries
         SET delivery_id = CONCAT('DEL-', LPAD((@row_number := @row_number + 1), 6, '0'))
         WHERE delivery_id IS NULL
-        ORDER BY createdAt ASC;
+        ORDER BY created_at ASC
       `);
 
       console.log('✅ Populated existing delivery records with delivery IDs');

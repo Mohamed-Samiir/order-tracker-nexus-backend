@@ -32,7 +32,7 @@ export class AddDeliveryDateToDeliveryItems1703000000010 implements MigrationInt
       await queryRunner.query(`
         UPDATE delivery_items di
         INNER JOIN deliveries d ON di.delivery_id = d.id
-        SET di.delivery_date = d.deliveryDate
+        SET di.delivery_date = d.delivery_date
         WHERE di.delivery_date IS NULL
       `);
 

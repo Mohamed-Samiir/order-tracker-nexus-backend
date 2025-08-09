@@ -55,13 +55,13 @@ export class User {
   @Index('IDX_USER_IS_DELETED')
   isDeleted: boolean;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ name: 'last_login', type: 'timestamp', nullable: true })
   lastLogin: Date;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
   @OneToMany(() => Order, (order) => order.createdBy)

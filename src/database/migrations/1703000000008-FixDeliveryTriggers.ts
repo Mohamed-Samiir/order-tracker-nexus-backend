@@ -10,7 +10,7 @@ export class FixDeliveryTriggers1703000000008 implements MigrationInterface {
     await queryRunner.query(`DROP TRIGGER IF EXISTS update_quantity_remaining_after_delivery_update`);
     await queryRunner.query(`DROP TRIGGER IF EXISTS update_quantity_remaining_after_delivery_delete`);
 
-    // Recreate triggers with correct column names (camelCase)
+    // Recreate triggers with correct column names (snake_case - actual database column names)
     await queryRunner.query(`
       CREATE TRIGGER validate_delivery_quantity_before_insert
       BEFORE INSERT ON delivery_items
@@ -23,15 +23,13 @@ export class FixDeliveryTriggers1703000000008 implements MigrationInterface {
           FROM order_items oi WHERE oi.id = NEW.order_item_id;
 
           -- PREVENT NEGATIVE QUANTITIES: Reject if delivery would exceed remaining quantity
-          IF NEW.deliveredQuantity > quantity_remaining_var THEN
-              SIGNAL SQLSTATE '45000'
-              SET MESSAGE_TEXT = 'Delivery quantity exceeds remaining quantity';
+          IF NEW.delivered_quantity > quantity_remaining_var THEN
+              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Delivery quantity exceeds remaining quantity';
           END IF;
 
           -- Additional validation: Ensure order item exists
           IF quantity_remaining_var IS NULL THEN
-              SIGNAL SQLSTATE '45000'
-              SET MESSAGE_TEXT = 'Order item not found';
+              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Order item not found';
           END IF;
       END
     `);
@@ -43,11 +41,11 @@ export class FixDeliveryTriggers1703000000008 implements MigrationInterface {
       BEGIN
           -- AUTOMATIC RECALCULATION: Subtract delivered quantity from remaining quantity
           UPDATE order_items
-          SET quantity_remaining = quantity_remaining - NEW.deliveredQuantity
+          SET quantity_remaining = quantity_remaining - NEW.delivered_quantity
           WHERE id = NEW.order_item_id;
 
           -- This happens ATOMICALLY within the same transaction as the INSERT
-          -- Example: If quantity_remaining was 100 and deliveredQuantity is 25,
+          -- Example: If quantity_remaining was 100 and delivered_quantity is 25,
           -- the quantity_remaining becomes 75 automatically
       END
     `);
@@ -60,7 +58,7 @@ export class FixDeliveryTriggers1703000000008 implements MigrationInterface {
           DECLARE quantity_difference INT DEFAULT 0;
 
           -- Calculate the difference in delivered quantities
-          SET quantity_difference = NEW.deliveredQuantity - OLD.deliveredQuantity;
+          SET quantity_difference = NEW.delivered_quantity - OLD.delivered_quantity;
 
           -- Adjust remaining quantity by the difference
           -- Positive difference = more delivered = less remaining
@@ -78,7 +76,7 @@ export class FixDeliveryTriggers1703000000008 implements MigrationInterface {
       BEGIN
           -- RESTORE QUANTITY: Add back the delivered quantity to remaining quantity
           UPDATE order_items
-          SET quantity_remaining = quantity_remaining + OLD.deliveredQuantity
+          SET quantity_remaining = quantity_remaining + OLD.delivered_quantity
           WHERE id = OLD.order_item_id;
 
           -- Example: If a delivery of 25 items is deleted,
@@ -108,14 +106,12 @@ export class FixDeliveryTriggers1703000000008 implements MigrationInterface {
 
           -- PREVENT NEGATIVE QUANTITIES: Reject if delivery would exceed remaining quantity
           IF NEW.delivered_quantity > quantity_remaining_var THEN
-              SIGNAL SQLSTATE '45000'
-              SET MESSAGE_TEXT = 'Delivery quantity exceeds remaining quantity';
+              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Delivery quantity exceeds remaining quantity';
           END IF;
 
           -- Additional validation: Ensure order item exists
           IF quantity_remaining_var IS NULL THEN
-              SIGNAL SQLSTATE '45000'
-              SET MESSAGE_TEXT = 'Order item not found';
+              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Order item not found';
           END IF;
       END
     `);

@@ -16,21 +16,21 @@ import { Delivery } from './delivery.entity';
 import { OrderItem } from '../../orders/entities/order-item.entity';
 
 @Entity('delivery_items')
-@Check('CHK_delivered_quantity_positive', 'deliveredQuantity > 0')
-@Check('CHK_unit_price_non_negative', 'unitPrice >= 0')
-@Check('CHK_total_amount_non_negative', 'totalAmount >= 0')
+@Check('CHK_delivered_quantity_positive', 'delivered_quantity > 0')
+@Check('CHK_unit_price_non_negative', 'unit_price >= 0')
+@Check('CHK_total_amount_non_negative', 'total_amount >= 0')
 @Unique('UNQ_DELIVERY_ORDER_ITEM', ['delivery', 'orderItem'])
 export class DeliveryItem {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'int' })
+  @Column({ name: 'delivered_quantity', type: 'int' })
   deliveredQuantity: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ name: 'unit_price', type: 'decimal', precision: 10, scale: 2 })
   unitPrice: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ name: 'total_amount', type: 'decimal', precision: 10, scale: 2 })
   totalAmount: number;
 
   @Column({ type: 'date', nullable: true, name: 'delivery_date' })

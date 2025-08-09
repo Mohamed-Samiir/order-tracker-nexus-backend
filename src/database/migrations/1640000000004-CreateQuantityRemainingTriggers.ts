@@ -1,8 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateQuantityRemainingTriggers1640000000004
-  implements MigrationInterface
-{
+  implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // 1. Validation trigger - Prevent delivery items that would cause negative quantity_remaining
     await queryRunner.query(`
@@ -18,14 +17,12 @@ export class CreateQuantityRemainingTriggers1640000000004
           
           -- PREVENT NEGATIVE QUANTITIES: Reject if delivery would exceed remaining quantity
           IF NEW.delivered_quantity > quantity_remaining_var THEN
-              SIGNAL SQLSTATE '45000'
-              SET MESSAGE_TEXT = 'Delivery quantity exceeds remaining quantity';
+              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Delivery quantity exceeds remaining quantity';
           END IF;
 
           -- Additional validation: Ensure order item exists
           IF quantity_remaining_var IS NULL THEN
-              SIGNAL SQLSTATE '45000'
-              SET MESSAGE_TEXT = 'Order item not found';
+              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Order item not found';
           END IF;
       END;
     `);
@@ -95,8 +92,7 @@ export class CreateQuantityRemainingTriggers1640000000004
               -- Check if this update is coming from our triggers by examining the call stack
               -- If quantity_remaining is being updated directly (not via delivery operations)
               IF @TRIGGER_CONTEXT IS NULL THEN
-                  SIGNAL SQLSTATE '45000' 
-                  SET MESSAGE_TEXT = 'Direct updates to quantity_remaining are not allowed. Use delivery operations instead.';
+                  SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Direct updates to quantity_remaining are not allowed. Use delivery operations instead.';
               END IF;
           END IF;
       END;

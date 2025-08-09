@@ -1,8 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class FixDeliveryItemConstraints1703000000007
-  implements MigrationInterface
-{
+  implements MigrationInterface {
   name = 'FixDeliveryItemConstraints1703000000007';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -37,23 +36,23 @@ export class FixDeliveryItemConstraints1703000000007
       console.log('CHK_total_amount_non_negative constraint not found, continuing...');
     }
 
-    // Add check constraints with correct column names (camelCase)
+    // Add check constraints with correct column names (snake_case - actual database column names)
     await queryRunner.query(`
-      ALTER TABLE delivery_items 
-      ADD CONSTRAINT CHK_delivered_quantity_positive 
-      CHECK (deliveredQuantity > 0)
+      ALTER TABLE delivery_items
+      ADD CONSTRAINT CHK_delivered_quantity_positive
+      CHECK (delivered_quantity > 0)
     `);
 
     await queryRunner.query(`
-      ALTER TABLE delivery_items 
-      ADD CONSTRAINT CHK_unit_price_non_negative 
-      CHECK (unitPrice >= 0)
+      ALTER TABLE delivery_items
+      ADD CONSTRAINT CHK_unit_price_non_negative
+      CHECK (unit_price >= 0)
     `);
 
     await queryRunner.query(`
-      ALTER TABLE delivery_items 
-      ADD CONSTRAINT CHK_total_amount_non_negative 
-      CHECK (totalAmount >= 0)
+      ALTER TABLE delivery_items
+      ADD CONSTRAINT CHK_total_amount_non_negative
+      CHECK (total_amount >= 0)
     `);
   }
 

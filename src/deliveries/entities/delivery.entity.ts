@@ -35,7 +35,7 @@ export class Delivery {
   @Index('IDX_DELIVERY_DELIVERY_ID')
   deliveryId: string;
 
-  @Column({ type: 'date' })
+  @Column({ name: 'delivery_date', type: 'date' })
   @Index('IDX_DELIVERY_DATE')
   deliveryDate: Date;
 

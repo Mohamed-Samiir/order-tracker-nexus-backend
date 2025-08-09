@@ -33,8 +33,7 @@ export class FixQuantityCalculationTriggers1703000000011 implements MigrationInt
           -- Validate that we don't exceed available quantity
           IF NEW.delivered_quantity > remaining_qty THEN
               SET @TRIGGER_CONTEXT = NULL;
-              SIGNAL SQLSTATE '45000' 
-              SET MESSAGE_TEXT = CONCAT('Delivery quantity (', NEW.delivered_quantity, ') exceeds remaining quantity (', remaining_qty, ')');
+              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Delivery quantity exceeds remaining quantity';
           END IF;
 
           -- Update remaining quantity
@@ -81,15 +80,13 @@ export class FixQuantityCalculationTriggers1703000000011 implements MigrationInt
               -- Validate that the update won't cause negative remaining quantity
               IF (remaining_qty - quantity_difference) < 0 THEN
                   SET @TRIGGER_CONTEXT = NULL;
-                  SIGNAL SQLSTATE '45000' 
-                  SET MESSAGE_TEXT = CONCAT('Update would result in negative remaining quantity. Current: ', remaining_qty, ', Change: ', quantity_difference);
+                  SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Update would result in negative remaining quantity';
               END IF;
 
               -- Validate that remaining quantity won't exceed requested quantity
               IF (remaining_qty - quantity_difference) > requested_qty THEN
                   SET @TRIGGER_CONTEXT = NULL;
-                  SIGNAL SQLSTATE '45000' 
-                  SET MESSAGE_TEXT = CONCAT('Update would result in remaining quantity exceeding requested quantity');
+                  SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Update would result in remaining quantity exceeding requested quantity';
               END IF;
 
               -- Update remaining quantity
@@ -131,8 +128,7 @@ export class FixQuantityCalculationTriggers1703000000011 implements MigrationInt
           -- Validate that restoring quantity won't exceed requested quantity
           IF (remaining_qty + OLD.delivered_quantity) > requested_qty THEN
               SET @TRIGGER_CONTEXT = NULL;
-              SIGNAL SQLSTATE '45000' 
-              SET MESSAGE_TEXT = CONCAT('Restoring quantity would exceed requested quantity');
+              SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Restoring quantity would exceed requested quantity';
           END IF;
 
           -- Restore quantity by adding back the delivered quantity
@@ -165,20 +161,17 @@ export class FixQuantityCalculationTriggers1703000000011 implements MigrationInt
               IF @TRIGGER_CONTEXT IS NULL OR @TRIGGER_CONTEXT = '' THEN
                   -- Allow updates during initial data load (when old quantity is 0)
                   IF OLD.quantity_remaining != 0 THEN
-                      SIGNAL SQLSTATE '45000' 
-                      SET MESSAGE_TEXT = 'Direct updates to quantity_remaining are not allowed. Use delivery operations instead.';
+                      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Direct updates to quantity_remaining are not allowed. Use delivery operations instead.';
                   END IF;
               END IF;
-              
+
               -- Additional validation: ensure quantity_remaining is within valid bounds
               IF NEW.quantity_remaining < 0 THEN
-                  SIGNAL SQLSTATE '45000' 
-                  SET MESSAGE_TEXT = 'quantity_remaining cannot be negative';
+                  SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'quantity_remaining cannot be negative';
               END IF;
-              
+
               IF NEW.quantity_remaining > NEW.quantity_requested THEN
-                  SIGNAL SQLSTATE '45000' 
-                  SET MESSAGE_TEXT = 'quantity_remaining cannot exceed quantity_requested';
+                  SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'quantity_remaining cannot exceed quantity_requested';
               END IF;
           END IF;
       END
