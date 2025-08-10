@@ -91,8 +91,11 @@ export class DeliveriesService {
 
       await manager.save(DeliveryItem, deliveryItems);
 
-      // Update order item quantities and order totals
-      await this.updateQuantitiesAfterDelivery(manager, createDeliveryDto.items, order.id);
+      // Note: Quantity updates are handled automatically by database triggers
+      // when delivery items are saved. No manual quantity updates needed.
+
+      // Update order totals (but not individual item quantities - triggers handle that)
+      await this.updateOrderTotalRemaining(manager, order.id);
 
       // Return the delivery with its relations using the transaction manager
       const deliveryWithRelations = await manager.findOne(Delivery, {
@@ -206,13 +209,13 @@ export class DeliveriesService {
 
       // If items are being updated, replace them
       if (updateDeliveryDto.items) {
-        // First, restore quantities from existing delivery items
-        await this.restoreQuantitiesFromDelivery(manager, id);
+        // Note: Database triggers will automatically handle quantity restoration
+        // when delivery items are deleted and quantity updates when new items are saved
 
-        // Remove existing items
+        // Remove existing items (triggers will restore quantities automatically)
         await manager.delete(DeliveryItem, { delivery: { id } });
 
-        // Add new items
+        // Add new items (triggers will update quantities automatically)
         const deliveryItems = updateDeliveryDto.items.map((itemDto) => {
           const totalAmount = itemDto.deliveredQuantity * itemDto.unitPrice;
 
@@ -230,8 +233,8 @@ export class DeliveriesService {
 
         await manager.save(DeliveryItem, deliveryItems);
 
-        // Apply new quantities
-        await this.updateQuantitiesAfterDelivery(manager, updateDeliveryDto.items, delivery.order.id);
+        // Update order totals (individual item quantities handled by triggers)
+        await this.updateOrderTotalRemaining(manager, delivery.order.id);
       }
 
       // Return the delivery with its relations using the transaction manager
@@ -251,13 +254,16 @@ export class DeliveriesService {
   async remove(id: string): Promise<void> {
     const delivery = await this.findOne(id);
 
-    // Use transaction to ensure quantity restoration and deletion are atomic
+    // Use transaction to ensure deletion is atomic
     await this.dataSource.transaction(async (manager) => {
-      // Restore quantities before deleting the delivery
-      await this.restoreQuantitiesFromDelivery(manager, id);
+      // Note: Database triggers will automatically restore quantities
+      // when delivery items are deleted (cascade delete)
 
-      // Remove the delivery (cascade will remove delivery items)
+      // Remove the delivery (cascade will remove delivery items and restore quantities)
       await manager.remove(delivery);
+
+      // Update order totals after deletion
+      await this.updateOrderTotalRemaining(manager, delivery.order.id);
     });
   }
 
@@ -1090,92 +1096,18 @@ export class DeliveriesService {
   }
 
   /**
-   * Update order item quantities and order totals after delivery creation
+   * Note: This method has been removed because database triggers now automatically
+   * handle quantity updates when delivery items are created, updated, or deleted.
+   * Manual quantity updates are no longer needed and would conflict with the
+   * trigger-based system.
    */
-  private async updateQuantitiesAfterDelivery(
-    manager: any,
-    deliveryItems: any[],
-    orderId: string,
-  ): Promise<void> {
-    // Update each order item's remaining quantity
-    for (const deliveryItem of deliveryItems) {
-      // Get current order item data
-      const orderItem = await manager.findOne(OrderItem, {
-        where: { id: deliveryItem.orderItemId },
-      });
-
-      if (!orderItem) {
-        throw new Error(`Order item ${deliveryItem.orderItemId} not found during quantity update`);
-      }
-
-      // Calculate new remaining quantity
-      const newQuantityRemaining = orderItem.quantityRemaining - deliveryItem.deliveredQuantity;
-
-      // Validate that we don't go negative (additional safety check)
-      if (newQuantityRemaining < 0) {
-        throw new BadRequestException(
-          `Delivery would result in negative remaining quantity for item ${orderItem.asin}. ` +
-          `Current remaining: ${orderItem.quantityRemaining}, Delivery quantity: ${deliveryItem.deliveredQuantity}`
-        );
-      }
-
-      // Update the order item's remaining quantity
-      await manager.update(OrderItem,
-        { id: deliveryItem.orderItemId },
-        { quantityRemaining: newQuantityRemaining }
-      );
-    }
-
-    // Recalculate and update the order's total remaining and delivered quantities
-    await this.updateOrderTotalRemaining(manager, orderId);
-  }
 
   /**
-   * Restore quantities from existing delivery items before updating/deleting them
+   * Note: This method has been removed because database triggers now automatically
+   * handle quantity restoration when delivery items are deleted. The DELETE trigger
+   * automatically adds back the delivered quantity to the remaining quantity.
+   * Manual quantity restoration is no longer needed.
    */
-  private async restoreQuantitiesFromDelivery(
-    manager: any,
-    deliveryId: string,
-  ): Promise<void> {
-    // Get existing delivery items
-    const existingDeliveryItems = await manager.find(DeliveryItem, {
-      where: { delivery: { id: deliveryId } },
-      relations: ['orderItem'],
-    });
-
-    // Restore quantities for each delivery item
-    for (const deliveryItem of existingDeliveryItems) {
-      // Get current order item data
-      const orderItem = await manager.findOne(OrderItem, {
-        where: { id: deliveryItem.orderItem.id },
-      });
-
-      if (orderItem) {
-        // Restore the quantity by adding back the delivered quantity
-        const restoredQuantityRemaining = orderItem.quantityRemaining + deliveryItem.deliveredQuantity;
-
-        // Update the order item's remaining quantity
-        await manager.update(OrderItem,
-          { id: deliveryItem.orderItem.id },
-          { quantityRemaining: restoredQuantityRemaining }
-        );
-      }
-    }
-
-    // Get the order ID from the delivery (all items belong to the same order)
-    if (existingDeliveryItems.length > 0) {
-      // Get the delivery to access its order
-      const delivery = await manager.findOne(Delivery, {
-        where: { id: deliveryId },
-        relations: ['order'],
-      });
-
-      if (delivery?.order?.id) {
-        // Recalculate and update the order's total remaining and delivered quantities
-        await this.updateOrderTotalRemaining(manager, delivery.order.id);
-      }
-    }
-  }
 
   /**
    * Recalculate and update the order's total remaining and delivered quantities
@@ -1198,7 +1130,7 @@ export class DeliveriesService {
     // Calculate total delivered quantity by getting all delivery items for this order
     // Use a simpler approach: get all delivery items that belong to order items of this order
     const deliveryItemsResult = await manager.query(`
-      SELECT COALESCE(SUM(di.deliveredQuantity), 0) as totalDelivered
+      SELECT COALESCE(SUM(di.delivered_quantity), 0) as totalDelivered
       FROM delivery_items di
       INNER JOIN order_items oi ON di.order_item_id = oi.id
       INNER JOIN orders o ON oi.order_id = o.id
