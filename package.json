@@ -42,6 +42,8 @@
     "test:delivery-triggers": "ts-node scripts/test-delivery-trigger-fix.ts",
     "test:delivery-service": "ts-node scripts/test-delivery-service-integration.ts",
     "test:order-totals": "ts-node scripts/test-order-total-calculation.ts",
+    "test:orders-query": "ts-node scripts/test-orders-query-fix.ts",
+    "test:all-entities": "ts-node scripts/test-all-entity-mappings.ts",
     "seed:prod": "NODE_ENV=production ts-node src/database/seeds/seed.ts",
     "migration:prod": "NODE_ENV=production npm run migration:run",
     "test:e2e:prod": "NODE_ENV=test jest --config ./test/jest-e2e.json",
