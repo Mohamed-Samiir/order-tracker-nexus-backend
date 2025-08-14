@@ -410,8 +410,8 @@ export class DeliveriesService {
           if (!brandName) missingFields.push('Brand Name');
           if (!modelNumber) missingFields.push('Model Number');
           if (!title) missingFields.push('Title');
-          if (!deliveredQuantity || deliveredQuantity <= 0)
-            missingFields.push('Delivered Quantity');
+          if (deliveredQuantity == null || isNaN(deliveredQuantity) || deliveredQuantity < 0)
+            missingFields.push('Delivered Quantity (must be zero or positive)');
           if (isNaN(unitPrice) || unitPrice < 0)
             missingFields.push('Unit Price');
 
@@ -856,9 +856,9 @@ export class DeliveriesService {
       );
     }
 
-    // Validate delivered quantity
-    if (!Number.isInteger(deliveredQuantity) || deliveredQuantity <= 0) {
-      throw new Error('Delivered quantity must be a positive integer');
+    // Validate delivered quantity (allow zero, but not negative)
+    if (!Number.isInteger(deliveredQuantity) || deliveredQuantity < 0) {
+      throw new Error('Delivered quantity must be zero or a positive integer');
     }
 
     // Validate unit price
@@ -931,8 +931,14 @@ export class DeliveriesService {
         );
       }
 
-      if (deliveryItem.deliveredQuantity <= 0) {
-        throw new BadRequestException('Delivery quantity must be positive');
+      // Validate delivered quantity (allow zero, but not negative or null/undefined)
+      if (deliveryItem.deliveredQuantity == null || deliveryItem.deliveredQuantity < 0) {
+        throw new BadRequestException('Delivery quantity must be zero or positive');
+      }
+
+      // Ensure it's a valid number
+      if (!Number.isInteger(deliveryItem.deliveredQuantity)) {
+        throw new BadRequestException('Delivery quantity must be a whole number');
       }
     }
   }

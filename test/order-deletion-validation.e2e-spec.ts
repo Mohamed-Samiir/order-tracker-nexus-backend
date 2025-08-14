@@ -5,7 +5,7 @@ import { DataSource } from 'typeorm';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { User, UserRole, UserStatus } from '../src/users/entities/user.entity';
-import { Order } from '../src/orders/entities/order.entity';
+import { Order, OrderStatus } from '../src/orders/entities/order.entity';
 import { OrderItem } from '../src/orders/entities/order-item.entity';
 import { Delivery } from '../src/deliveries/entities/delivery.entity';
 import { DeliveryItem } from '../src/deliveries/entities/delivery-item.entity';
@@ -62,7 +62,7 @@ describe('Order Deletion Validation (e2e)', () => {
     // Create test order without deliveries
     testOrderWithoutDeliveries = await dataSource.getRepository(Order).save({
       orderId: 'TEST-ORDER-NO-DELIVERIES',
-      status: 'pending',
+      status: OrderStatus.PENDING,
       totalItems: 50,
       totalCost: 500.00,
       remainingQuantity: 50,
@@ -87,7 +87,7 @@ describe('Order Deletion Validation (e2e)', () => {
     // Create test order with deliveries
     testOrderWithDeliveries = await dataSource.getRepository(Order).save({
       orderId: 'TEST-ORDER-WITH-DELIVERIES',
-      status: 'pending',
+      status: OrderStatus.PENDING,
       totalItems: 100,
       totalCost: 1000.00,
       remainingQuantity: 75,
@@ -161,7 +161,7 @@ describe('Order Deletion Validation (e2e)', () => {
       });
 
       expect(deletedOrder).toBeDefined();
-      expect(deletedOrder.isDeleted).toBe(true);
+      expect(deletedOrder!.isDeleted).toBe(true);
     });
 
     it('should return 400 when trying to delete order with deliveries', async () => {
@@ -245,7 +245,7 @@ describe('Order Deletion Validation (e2e)', () => {
       // Create a temporary order with delivery for this test
       const tempOrder = await dataSource.getRepository(Order).save({
         orderId: 'TEMP-ORDER-FOR-DELETION',
-        status: 'pending',
+        status: OrderStatus.PENDING,
         totalItems: 10,
         totalCost: 100.00,
         remainingQuantity: 10,
