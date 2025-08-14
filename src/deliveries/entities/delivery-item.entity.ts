@@ -51,10 +51,10 @@ export class DeliveryItem {
   @Index('IDX_DELIVERY_ITEM_ORDER_ITEM_ID')
   orderItem: OrderItem;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
   @BeforeInsert()

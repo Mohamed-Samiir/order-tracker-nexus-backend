@@ -1,6 +1,16 @@
-# Database Migration Fix: isDeleted Column Issue
+# Database Migration History: Legacy Issues (RESOLVED)
 
-## Problem Description
+## ⚠️ NOTICE: This document describes legacy migration issues that have been RESOLVED
+
+**All legacy migration files have been removed and replaced with consolidated migrations.**
+
+**Current Status**: The database now uses only 2 consolidated migration files:
+- `1703000000020-ConsolidatedSchema.ts` - Complete database schema
+- `1703000000021-ConsolidatedTriggers.ts` - All database triggers
+
+## Historical Problem Description (For Reference Only)
+
+This section documents the issues that existed with the legacy migration system before consolidation:
 
 When dropping the MySQL database and running migrations followed by seeding, an error occurred indicating that the "users" table was missing an "isDeleted" column. This happened because:
 
@@ -333,9 +343,44 @@ To prevent similar issues:
 - ✅ `scripts/test-migration-fix.ts` (new)
 - ✅ `package.json` (added test script)
 
-## Next Steps
+## Current Solution: Consolidated Migrations
 
-1. Run the test script to verify the fix works
-2. Test your normal database recreation workflow
-3. Consider running this test script in your CI/CD pipeline
-4. Update any other scripts that might insert users directly via SQL
+**All legacy migration issues have been resolved by implementing consolidated migrations.**
+
+### New Database Setup Process
+
+```bash
+# Use consolidated migrations (recommended)
+npm run db:setup:fresh
+
+# Or step by step
+npm run schema:drop
+npm run migration:run  # Runs only 2 consolidated migrations
+npm run seed
+```
+
+### Testing the New Setup
+
+```bash
+# Test the clean consolidated setup
+npm run test:clean-db-setup
+
+# Test consolidated migrations
+npm run test:consolidated-migration
+
+# Test all entity mappings
+npm run test:all-entities
+```
+
+## Conclusion
+
+**Legacy migration issues are now resolved through consolidation:**
+
+- ✅ **Single source of truth**: 2 consolidated migration files replace 17+ legacy files
+- ✅ **Consistent naming**: All database columns use snake_case naming
+- ✅ **Perfect entity mappings**: All TypeORM entities have explicit column name mappings
+- ✅ **Comprehensive testing**: Multiple test scripts validate functionality
+- ✅ **Clean migration history**: No more complex migration dependencies
+- ✅ **Zero column errors**: All entity-database mismatches resolved
+
+The database is now properly set up with a clean, maintainable migration system that eliminates all the historical issues documented above.

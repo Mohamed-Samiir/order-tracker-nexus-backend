@@ -25,7 +25,7 @@ export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'orderId', unique: true })
+  @Column({ name: 'order_id', unique: true })
   @Index('IDX_ORDER_ID')
   orderId: string;
 
@@ -38,22 +38,22 @@ export class Order {
   @Index('IDX_ORDER_STATUS')
   status: OrderStatus;
 
-  @Column({ name: 'totalItems', type: 'int', default: 0 })
+  @Column({ name: 'total_items', type: 'int', default: 0 })
   totalItems: number;
 
-  @Column({ name: 'totalCost', type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({ name: 'total_cost', type: 'decimal', precision: 10, scale: 2, default: 0 })
   totalCost: number;
 
-  @Column({ name: 'deliveredQuantity', type: 'int', default: 0 })
+  @Column({ name: 'delivered_quantity', type: 'int', default: 0 })
   deliveredQuantity: number;
 
-  @Column({ name: 'remainingQuantity', type: 'int', default: 0 })
+  @Column({ name: 'remaining_quantity', type: 'int', default: 0 })
   remainingQuantity: number;
 
-  @Column({ name: 'fileName', type: 'varchar', length: 255, nullable: true })
+  @Column({ name: 'file_name', type: 'varchar', length: 255, nullable: true })
   fileName: string | null;
 
-  @Column({ name: 'isDeleted', type: 'boolean', default: false })
+  @Column({ name: 'is_deleted', type: 'boolean', default: false })
   @Index('IDX_ORDER_IS_DELETED')
   isDeleted: boolean;
 
@@ -68,10 +68,10 @@ export class Order {
   @OneToMany(() => Delivery, (delivery) => delivery.order)
   deliveries: Delivery[];
 
-  @CreateDateColumn({ name: 'createdAt' })
+  @CreateDateColumn({ name: 'created_at' })
   @Index('IDX_ORDER_CREATED_AT')
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updatedAt' })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

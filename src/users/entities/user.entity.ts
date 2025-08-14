@@ -51,7 +51,7 @@ export class User {
   @Index('IDX_USER_STATUS')
   status: UserStatus;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ name: 'is_deleted', type: 'boolean', default: false })
   @Index('IDX_USER_IS_DELETED')
   isDeleted: boolean;
 

@@ -1134,7 +1134,7 @@ export class DeliveriesService {
       FROM delivery_items di
       INNER JOIN order_items oi ON di.order_item_id = oi.id
       INNER JOIN orders o ON oi.order_id = o.id
-      WHERE o.id = ? AND o.isDeleted = 0
+      WHERE o.id = ? AND o.is_deleted = 0
     `, [orderId]);
 
     const totalDelivered = parseInt(deliveryItemsResult[0]?.totalDelivered || '0', 10);
@@ -1156,7 +1156,7 @@ export class DeliveriesService {
       .leftJoinAndSelect('delivery.createdBy', 'createdBy')
       .leftJoinAndSelect('delivery.deliveryItems', 'deliveryItems')
       .leftJoinAndSelect('deliveryItems.orderItem', 'orderItem')
-      .where('order.isDeleted = :isDeleted', { isDeleted: false })
+      .where('order.is_deleted = :isDeleted', { isDeleted: false })
       .select([
         'delivery.id',
         'delivery.deliveryId',
