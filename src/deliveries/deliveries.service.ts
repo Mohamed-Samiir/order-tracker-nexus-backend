@@ -385,9 +385,8 @@ export class DeliveriesService {
       const worksheet = workbook.Sheets[sheetName];
       const data = XLSX.utils.sheet_to_json(worksheet);
 
-      if (data.length === 0) {
-        throw new BadRequestException('Excel file is empty');
-      }
+      // Validate required columns are present
+      this.validateExcelColumns(data);
 
       const errors: string[] = [];
       const validItems: any[] = [];
@@ -618,9 +617,8 @@ export class DeliveriesService {
       const worksheet = workbook.Sheets[sheetName];
       const data = XLSX.utils.sheet_to_json(worksheet);
 
-      if (data.length === 0) {
-        throw new BadRequestException('Excel file is empty');
-      }
+      // Validate required columns are present
+      this.validateExcelColumns(data);
 
       const errors: string[] = [];
       const validItems: any[] = [];
@@ -816,6 +814,59 @@ export class DeliveriesService {
     if (!validTransitions[currentStatus].includes(newStatus)) {
       throw new BadRequestException(
         `Invalid status transition from ${currentStatus} to ${newStatus}`,
+      );
+    }
+  }
+
+  /**
+   * Validates that all required columns are present in the Excel file
+   * @param data - The parsed Excel data (array of row objects)
+   * @throws BadRequestException if required columns are missing
+   */
+  private validateExcelColumns(data: any[]): void {
+    if (!data || data.length === 0) {
+      throw new BadRequestException('Excel file is empty');
+    }
+
+    const requiredColumns = [
+      'ASIN',
+      'Brand Name',
+      'Model Number',
+      'Title',
+      'Delivered Quantity',
+      'Unit Price'
+    ];
+
+    // Get the first row to check column headers
+    const firstRow = data[0];
+    const availableColumns = Object.keys(firstRow);
+
+    // Normalize column names for case-insensitive comparison
+    const normalizedAvailableColumns = availableColumns.map(col => col.toLowerCase().trim());
+    const normalizedRequiredColumns = requiredColumns.map(col => col.toLowerCase().trim());
+
+    // Find missing columns
+    const missingColumns: string[] = [];
+
+    requiredColumns.forEach((requiredCol, index) => {
+      const normalizedRequired = normalizedRequiredColumns[index];
+      const isPresent = normalizedAvailableColumns.some(availableCol =>
+        availableCol === normalizedRequired
+      );
+
+      if (!isPresent) {
+        missingColumns.push(requiredCol);
+      }
+    });
+
+    // If there are missing columns, throw a detailed error
+    if (missingColumns.length > 0) {
+      const missingColumnsText = missingColumns.map(col => `'${col}'`).join(', ');
+      const allRequiredColumnsText = requiredColumns.join(', ');
+
+      throw new BadRequestException(
+        `Missing required columns in Excel file: ${missingColumnsText}. ` +
+        `Please ensure your Excel file contains all required columns: ${allRequiredColumnsText}.`
       );
     }
   }

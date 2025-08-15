@@ -51,6 +51,8 @@
     "test:zero-delivery-quantity": "ts-node scripts/test-zero-delivery-quantity.ts",
     "test:zero-validation-simple": "ts-node scripts/test-zero-validation-simple.ts",
     "test:validation-logic": "ts-node scripts/test-validation-logic.ts",
+    "test:excel-column-validation": "ts-node scripts/test-excel-column-validation.ts",
+    "test:order-excel-column-validation": "ts-node scripts/test-order-excel-column-validation.ts",
     "seed:prod": "NODE_ENV=production ts-node src/database/seeds/seed.ts",
     "migration:prod": "NODE_ENV=production npm run migration:run",
     "test:e2e:prod": "NODE_ENV=test jest --config ./test/jest-e2e.json",
